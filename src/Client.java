@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Client {
@@ -24,12 +25,16 @@ public class Client {
 
             // Write to server
             while (true) {
-                String msgToSend = scanner.nextLine();
-                outputStream.write((msgToSend + "\n").getBytes());
+                String messageToSend = scanner.nextLine();
+                outputStream.write((messageToSend + "\n").getBytes());
                 outputStream.flush();
 
                 if (scanner.hasNextLine()) {
                     System.out.println("Server: " + scanner.nextLine());
+                }
+
+                if(Objects.equals(messageToSend, "EXIT")){
+                    break;
                 }
             }
         } catch (UnknownHostException e) {
