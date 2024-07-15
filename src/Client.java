@@ -6,37 +6,36 @@ import java.util.Scanner;
 
 public class Client {
     public static void main(String[] args) {
-        try{
-            Socket socket = new Socket("localhost", 9999 );
+        try {
+            Socket socket = new Socket("localhost", 9999);
             InputStream inputStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
             Scanner scanner = new Scanner(System.in);
 
+            // Thread to handle incoming messages from server
             new Thread(() -> {
                 try {
-                    Scanner inScanner = new Scanner(inputStream);
-                    while (inScanner.hasNextLine()) {
-                        System.out.println(inScanner.nextLine());
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    String messageFromServer;
+                    while ((messageFromServer = reader.readLine()) != null) {
+                        System.out.println("Server: " + messageFromServer);
                     }
-                } catch (Exception e) {
-                    System.err.println("Error reading from server: " + e.getMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }).start();
 
-            // Write to server
+            // Main thread to handle outgoing messages to server
             while (true) {
                 String messageToSend = scanner.nextLine();
-                outputStream.write((messageToSend + "\n").getBytes());
-                outputStream.flush();
+                PrintWriter writer = new PrintWriter(outputStream, true);
+                writer.println(messageToSend);
 
-                if (scanner.hasNextLine()) {
-                    System.out.println("Server: " + scanner.nextLine());
-                }
-
-                if(Objects.equals(messageToSend, "EXIT")){
+                if (Objects.equals(messageToSend, "EXIT")) {
                     break;
                 }
             }
+            socket.close();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
